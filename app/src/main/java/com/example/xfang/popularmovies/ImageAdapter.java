@@ -1,13 +1,15 @@
 package com.example.xfang.popularmovies;
 
 import android.content.Context;
-import android.view.LayoutInflater;
+import android.net.Uri;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
+import java.util.*;
 
+import com.example.xfang.popularmovies.model.Movie;
 import com.squareup.picasso.Picasso;
 
 /**
@@ -34,38 +36,69 @@ public class ImageAdapter extends BaseAdapter {
     };
 
     private Context mContext;
-    private LayoutInflater inflater;
+    private ArrayList<Movie> mMovies;
 
     public ImageAdapter(Context c) {
         mContext = c;
-        inflater = LayoutInflater.from(mContext);
-
+        mMovies = new ArrayList<>();
     }
 
+    @Override
     public int getCount() {
-        return 0;
+        return mMovies.size();
     }
 
-    public Object getItem(int position) {
-        return null;
+    @Override
+    public Movie getItem(int position) {
+        if (position < 0 || position >= mMovies.size()) {
+            return null;
+        }
+        return mMovies.get(position);
     }
 
+
+    @Override
     public long getItemId(int position) {
-        return 0;
+//        Movie movie = (Movie) getItem(position);
+//        if (movie == null) {
+//            return -1L;
+//        }
+//
+//        return movie.id;
+        return 47;
+    }
+
+    public void clear(){
+        mMovies.clear();
+    }
+
+    public void addAll(Collection<Movie> movies){
+        mMovies.addAll(movies);
+        notifyDataSetChanged();
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        if (null == convertView) {
-            convertView = inflater.inflate(R.layout.movie_item, parent, false);
+        Movie movie = getItem(position);
+        if (movie == null) {
+            return null;
         }
 
-        Picasso
-                .with(mContext)
-                .load(eatFoodyImages[position])
-                .fit() // will explain later
-                .into((ImageView) convertView);
+        ImageView imageView;
+        if (convertView == null) {
+            // if it's not recycled, initialize some attributes
+            imageView = new ImageView(mContext);
+            //imageView.setLayoutParams(new GridView.LayoutParams(mWidth, mHeight));
+            imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        } else {
+            imageView = (ImageView) convertView;
+        }
 
-        return convertView;
+        Uri posterUri = movie.getUri();
+        Picasso.with(mContext)
+                .load(posterUri)
+                .into(imageView);
+
+        return imageView;
     }
 }

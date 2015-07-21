@@ -1,6 +1,7 @@
-package com.example.xfang.popularmovies;
+package com.example.xfang.popularmovies.model;
 
 import android.media.Image;
+import android.net.Uri;
 
 import org.w3c.dom.Text;
 
@@ -27,6 +28,16 @@ public class Movie {
 
     public String toString(){
         return title + imagePath + plot + rating + date;
+    }
+
+    public Uri getUri(){
+
+        String baseUrl = "http://image.tmdb.org/t/p/";
+        String size = "w185";
+
+        Uri uri = Uri.parse(baseUrl).buildUpon().appendPath(size).appendEncodedPath(this.imagePath).build();
+
+        return uri;
     }
 
 }

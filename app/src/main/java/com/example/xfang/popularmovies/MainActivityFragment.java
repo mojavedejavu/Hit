@@ -8,9 +8,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.GridView;
-import android.widget.ListView;
+
+import com.example.xfang.popularmovies.model.Movie;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -44,14 +44,13 @@ public class MainActivityFragment extends Fragment {
 
         mRootView = inflater.inflate(R.layout.fragment_main, container, false);
 
+        // init adapter
         mAdapter = new ImageAdapter(getActivity());
         GridView gridView = (GridView) mRootView.findViewById(R.id.movies_grid_view);
         gridView.setAdapter(mAdapter);
 
-        //initializeAdapter();
-
-//        FetchMoviesTask fetchMoviesTask = new FetchMoviesTask();
-//        fetchMoviesTask.execute();
+        FetchMoviesTask fetchMoviesTask = new FetchMoviesTask();
+        fetchMoviesTask.execute();
 //
 //        for (int i = 0; i < mAdapter.getCount(); i++){
 //            Log.d(LOG_TAG, mAdapter.getItem(i).toString());
@@ -60,11 +59,6 @@ public class MainActivityFragment extends Fragment {
         return mRootView;
     }
 
-    void initializeAdapter() {
-        ArrayList<String> movies = new ArrayList<>();
-
-
-    }
 
     public class FetchMoviesTask extends AsyncTask<Void, Void, ArrayList<Movie>> {
 
@@ -125,15 +119,11 @@ public class MainActivityFragment extends Fragment {
             return movies;
         }
 
-
-
         @Override
         protected void onPostExecute(ArrayList<Movie> movies) {
             if (movies != null) {
-                //mAdapter.clear();
-                for(Movie movie : movies) {
-                    //mAdapter.add(movie);
-                }
+                mAdapter.clear();
+                mAdapter.addAll(movies);
                 // New data is back from the server.  Hooray!
             }
         }
