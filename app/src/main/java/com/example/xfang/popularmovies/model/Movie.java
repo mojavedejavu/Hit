@@ -30,11 +30,9 @@ public class Movie {
         return title + imagePath + plot + rating + date;
     }
 
-    public Uri getUri(){
+    public Uri getUri(String size){
 
         String baseUrl = "http://image.tmdb.org/t/p/";
-        String size = "w185";
-
         Uri uri = Uri.parse(baseUrl).buildUpon().appendPath(size).appendEncodedPath(this.imagePath).build();
 
         return uri;

@@ -2,6 +2,7 @@ package com.example.xfang.popularmovies;
 
 import android.content.Context;
 import android.net.Uri;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -17,6 +18,7 @@ import com.squareup.picasso.Picasso;
  */
 public class ImageAdapter extends BaseAdapter {
 
+    final String LOG_TAG = ImageAdapter.class.getSimpleName();
     // references to our images
     private String[] eatFoodyImages = {
             "http://i.imgur.com/rFLNqWI.jpg",
@@ -37,10 +39,15 @@ public class ImageAdapter extends BaseAdapter {
 
     private Context mContext;
     private ArrayList<Movie> mMovies;
+    private final int mHeight;
+    private final int mWidth;
 
     public ImageAdapter(Context c) {
         mContext = c;
         mMovies = new ArrayList<>();
+        mHeight = Math.round(mContext.getResources().getDimension(R.dimen.poster_height));
+        mWidth = Math.round(mContext.getResources().getDimension(R.dimen.poster_width));
+
     }
 
     @Override
@@ -88,13 +95,15 @@ public class ImageAdapter extends BaseAdapter {
         if (convertView == null) {
             // if it's not recycled, initialize some attributes
             imageView = new ImageView(mContext);
-            //imageView.setLayoutParams(new GridView.LayoutParams(mWidth, mHeight));
-            imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            imageView.setLayoutParams(new GridView.LayoutParams(mWidth, mHeight));
+            //imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            imageView.setScaleType(ImageView.ScaleType.FIT_XY);
         } else {
             imageView = (ImageView) convertView;
         }
 
-        Uri posterUri = movie.getUri();
+        Uri posterUri = movie.getUri(mContext.getString(R.string.api_poster_default_size));
+        Log.d(LOG_TAG, "Image URL: " + posterUri);
         Picasso.with(mContext)
                 .load(posterUri)
                 .into(imageView);

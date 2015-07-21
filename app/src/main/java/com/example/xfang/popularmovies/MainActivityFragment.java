@@ -51,10 +51,6 @@ public class MainActivityFragment extends Fragment {
 
         FetchMoviesTask fetchMoviesTask = new FetchMoviesTask();
         fetchMoviesTask.execute();
-//
-//        for (int i = 0; i < mAdapter.getCount(); i++){
-//            Log.d(LOG_TAG, mAdapter.getItem(i).toString());
-//        }
 
         return mRootView;
     }
@@ -77,7 +73,7 @@ public class MainActivityFragment extends Fragment {
             // Location information
             final String API_LIST = "results";
             final String API_TITLE = "original_title";
-            final String API_PATH = "backdrop_path";
+            final String API_PATH = "poster_path";
             final String API_PLOT = "overview";
             final String API_RATING = "vote_average";
             final String API_DATE = "release_date";
