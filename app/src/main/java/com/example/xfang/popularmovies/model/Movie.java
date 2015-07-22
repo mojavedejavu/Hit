@@ -12,6 +12,7 @@ import java.util.Date;
  */
 public class Movie {
 
+    public static int API_POSTER_SIZE = 185;
     String title;
     String imagePath;
     String plot;

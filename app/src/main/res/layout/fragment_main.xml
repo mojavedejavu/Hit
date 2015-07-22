@@ -4,14 +4,13 @@
     android:layout_height="match_parent"
     tools:context="com.example.xfang.popularmovies.MainActivityFragment">
 
-
     <GridView android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/movies_grid_view"
         android:columnWidth="@dimen/poster_width"
         android:gravity="center"
         android:numColumns="auto_fit"
-        android:stretchMode="spacingWidthUniform"
+        android:stretchMode="columnWidth"
         tools:context=".MainActivityFragment"
         />
 

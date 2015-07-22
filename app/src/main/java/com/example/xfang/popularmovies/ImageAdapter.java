@@ -2,6 +2,7 @@ package com.example.xfang.popularmovies;
 
 import android.content.Context;
 import android.net.Uri;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -95,14 +96,20 @@ public class ImageAdapter extends BaseAdapter {
         if (convertView == null) {
             // if it's not recycled, initialize some attributes
             imageView = new ImageView(mContext);
-            imageView.setLayoutParams(new GridView.LayoutParams(mWidth, mHeight));
-            //imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
-            imageView.setScaleType(ImageView.ScaleType.FIT_XY);
+            DisplayMetrics displayMetrics=mContext.getResources().getDisplayMetrics();
+            int screen_width=displayMetrics.widthPixels;    //width of the device screen
+            int view_width=screen_width/2;   //width for imageview
+            int view_height = (int) Math.round(view_width * 1.5);
+            Log.d(LOG_TAG, "screen width: "+ screen_width + " view_width: " + view_width +
+                    "mWidth: " + mWidth);
+
+            imageView.setLayoutParams(new GridView.LayoutParams(view_width, view_height));
+            imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
         } else {
             imageView = (ImageView) convertView;
         }
 
-        Uri posterUri = movie.getUri(mContext.getString(R.string.api_poster_default_size));
+        Uri posterUri = movie.getUri("w" + Movie.API_POSTER_SIZE);
         Log.d(LOG_TAG, "Image URL: " + posterUri);
         Picasso.with(mContext)
                 .load(posterUri)
