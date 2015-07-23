@@ -1,5 +1,6 @@
 package com.example.xfang.popularmovies;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v4.app.Fragment;
@@ -8,6 +9,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.GridView;
 
 import com.example.xfang.popularmovies.model.Movie;
@@ -44,10 +46,7 @@ public class MainActivityFragment extends Fragment {
 
         mRootView = inflater.inflate(R.layout.fragment_main, container, false);
 
-        // init adapter
-        mAdapter = new ImageAdapter(getActivity());
-        GridView gridView = (GridView) mRootView.findViewById(R.id.movies_grid_view);
-        gridView.setAdapter(mAdapter);
+        initGridView();
 
         FetchMoviesTask fetchMoviesTask = new FetchMoviesTask();
         fetchMoviesTask.execute();
@@ -55,6 +54,26 @@ public class MainActivityFragment extends Fragment {
         return mRootView;
     }
 
+    public void initGridView(){
+        mAdapter = new ImageAdapter(getActivity());
+        GridView gridView = (GridView) mRootView.findViewById(R.id.movies_grid_view);
+        gridView.setAdapter(mAdapter);
+
+        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                ImageAdapter imageAdapter = (ImageAdapter) parent.getAdapter();
+                Movie movie = imageAdapter.getItem(position);
+
+                if (movie == null){
+                    return;
+                }
+                Intent intent = new Intent(getActivity(),DetailActivity.class);
+                intent.putExtra(Movie.EXTRA_MOVIE, movie.toBundle());
+                startActivity(intent);
+            }
+        });
+    }
 
     public class FetchMoviesTask extends AsyncTask<Void, Void, ArrayList<Movie>> {
 
