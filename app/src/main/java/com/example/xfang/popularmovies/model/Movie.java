@@ -20,6 +20,7 @@ public class Movie {
     public static final String KEY_PLOT = "plot";
     public static final String KEY_RATING = "rating";
     public static final String KEY_DATE = "date";
+    public static final String KEY_ID = "id";
 
     public static int API_POSTER_SIZE = 185;
     public String title;
@@ -44,10 +45,11 @@ public class Movie {
         this.plot = bundle.getString(KEY_PLOT);
         this.rating = bundle.getDouble(KEY_RATING);
         this.date = bundle.getString(KEY_DATE);
+        this.id = bundle.getString(KEY_ID);
     }
 
     public String toString(){
-        return title + imagePath + plot + rating + date;
+        return id + " " + title + " " + imagePath + " " + plot + " " + rating + " " + date;
     }
 
     public Uri getUri(String size){
@@ -65,6 +67,7 @@ public class Movie {
         bundle.putString(KEY_PLOT, plot);
         bundle.putDouble(KEY_RATING, rating);
         bundle.putString(KEY_DATE, date);
+        bundle.putString(KEY_ID, id);
 
         return bundle;
     }

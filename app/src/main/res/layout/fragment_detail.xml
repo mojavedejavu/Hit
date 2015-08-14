@@ -70,6 +70,14 @@
             android:textSize="18sp"
             />
 
+        <ListView
+            android:id="@+id/detail_videos"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/grey"
+            />
+
+
     </LinearLayout>
 
 </ScrollView>
