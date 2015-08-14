@@ -27,13 +27,15 @@ public class Movie {
     public String plot;
     public double rating;
     public String date;
+    public String id;
 
-    public Movie(String title, String imagePath, String plot, double rating, String date){
+    public Movie(String title, String imagePath, String plot, double rating, String date, String id){
         this.title = title;
         this.imagePath = imagePath;
         this.plot = plot;
         this.rating = rating;
         this.date = date;
+        this.id = id;
     }
 
     public Movie(Bundle bundle){

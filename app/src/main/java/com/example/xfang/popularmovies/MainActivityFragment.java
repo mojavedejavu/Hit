@@ -1,8 +1,10 @@
 package com.example.xfang.popularmovies;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
@@ -25,6 +27,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.prefs.Preferences;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -96,6 +99,7 @@ public class MainActivityFragment extends Fragment {
             final String API_PLOT = "overview";
             final String API_RATING = "vote_average";
             final String API_DATE = "release_date";
+            final String API_ID = "id";
 
             try {
                 JSONObject moviesJson = new JSONObject(JSONString);
@@ -108,6 +112,7 @@ public class MainActivityFragment extends Fragment {
                     String plot;
                     double rating;
                     String date;
+                    String id;
 
                     // Get the JSON object representing the day
                     JSONObject movie = moviesArray.getJSONObject(i);
@@ -117,8 +122,9 @@ public class MainActivityFragment extends Fragment {
                     plot = movie.getString(API_PLOT);
                     rating = movie.getDouble(API_RATING);
                     date = movie.getString(API_DATE);
+                    id = movie.getString(API_ID);
 
-                    Movie movieObject = new Movie(title, imagePath, plot, rating, date);
+                    Movie movieObject = new Movie(title, imagePath, plot, rating, date, id);
                     movies.add(movieObject);
                     Log.d(LOG_TAG, "Added new movie: " + movieObject.toString());
                 }
@@ -153,17 +159,25 @@ public class MainActivityFragment extends Fragment {
             ArrayList<Movie> movies = new ArrayList<>();
 
             try {
-                // Construct the URL for the OpenWeatherMap query
-                // Possible parameters are avaiable at OWM's forecast API page, at
-                // http://openweathermap.org/API#forecast
                 final String BASE_URL =
-                        "http://api.themoviedb.org/3/discover/movie?";
-                final String SORT_PARAM = "sort_by";
-                final String API_KEY_PARAM = "api_key";
+                        "http://api.themoviedb.org/3/movie";
+                final String PARAM_PAGE = "page";
+                final String API_KEY = "api_key";
+
+
+                String userSortPref = PreferenceManager
+                        .getDefaultSharedPreferences(getActivity())
+                        .getString(
+                                getString(R.string.pref_sorting_key),
+                                getString(R.string.pref_sorting_default_value)
+                        );
+
+                Log.d(LOG_TAG, "userSortPref: " + userSortPref);
 
                 Uri builtUri = Uri.parse(BASE_URL).buildUpon()
-                        .appendQueryParameter(SORT_PARAM, "popularity.desc")
-                        .appendQueryParameter(API_KEY_PARAM, "af1cb7b82656a58d970263211175ce1f")
+                        .appendPath(userSortPref)
+                        .appendQueryParameter(PARAM_PAGE, String.valueOf(1))
+                        .appendQueryParameter(API_KEY, "af1cb7b82656a58d970263211175ce1f")
                         .build();
 
                 URL url = new URL(builtUri.toString());

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="pref_sorting_keys">
+        <item>"popular"</item>
+        <item>"top_rated"</item>
+    </string-array>
+
+    <string-array name="pref_sorting_labels">
+        <item>"Most Popular"</item>
+        <item>"Top rated"</item>
+    </string-array>
+
+    <string-array name="new_pref_keys">
+        <item>"aaa"</item>
+        <item>"bbb"</item>
+    </string-array>
+
+    <string-array name="new_pref_labels">
+        <item>"AAA"</item>
+        <item>"BBB"</item>
+    </string-array>
+</resources>
