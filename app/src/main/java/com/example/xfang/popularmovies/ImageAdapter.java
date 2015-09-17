@@ -55,7 +55,7 @@ public class ImageAdapter extends BaseAdapter {
 //            return -1L;
 //        }
 //
-//        return movie.id;
+//        return movie.movie_id;
         return 47;
     }
 

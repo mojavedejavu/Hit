@@ -15,7 +15,7 @@ public class Movie {
     public static final String KEY_PLOT = "plot";
     public static final String KEY_RATING = "rating";
     public static final String KEY_DATE = "date";
-    public static final String KEY_ID = "id";
+    public static final String KEY_ID = "movie_id";
 
     public static int API_POSTER_SIZE = 185;
     public String title;
@@ -23,15 +23,15 @@ public class Movie {
     public String plot;
     public double rating;
     public String date;
-    public String id;
+    public String movie_id;
 
-    public Movie(String title, String posterPath, String plot, double rating, String date, String id){
+    public Movie(String title, String posterPath, String plot, double rating, String date, String movie_id){
         this.title = title;
         this.posterPath = posterPath;
         this.plot = plot;
         this.rating = rating;
         this.date = date;
-        this.id = id;
+        this.movie_id = movie_id;
     }
 
     public Movie(Bundle bundle){
@@ -40,11 +40,11 @@ public class Movie {
         this.plot = bundle.getString(KEY_PLOT);
         this.rating = bundle.getDouble(KEY_RATING);
         this.date = bundle.getString(KEY_DATE);
-        this.id = bundle.getString(KEY_ID);
+        this.movie_id = bundle.getString(KEY_ID);
     }
 
     public String toString(){
-        return id + " " + title + " " + posterPath + " " + plot + " " + rating + " " + date;
+        return movie_id + " " + title + " " + posterPath + " " + plot + " " + rating + " " + date;
     }
 
     public Uri getUri(String size){
@@ -62,7 +62,7 @@ public class Movie {
         bundle.putString(KEY_PLOT, plot);
         bundle.putDouble(KEY_RATING, rating);
         bundle.putString(KEY_DATE, date);
-        bundle.putString(KEY_ID, id);
+        bundle.putString(KEY_ID, movie_id);
 
         return bundle;
     }

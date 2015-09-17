@@ -107,7 +107,7 @@ public class TestDb extends AndroidTestCase {
     public void testVideoTable(){
         // insert our test records into the database
         SQLiteDatabase db = new MovieDbHelper(mContext).getWritableDatabase();
-        ContentValues testValues = TestUtils.createInsideOutTrailerValues();
+        ContentValues testValues = TestUtilities.createInsideOutTrailerValues();
 
         long rowId;
         rowId = db.insert(MovieContract.VideoEntry.TABLE_NAME, null, testValues);
@@ -128,7 +128,7 @@ public class TestDb extends AndroidTestCase {
         assertTrue("Error: no records returned from querying the video table",
                 c.moveToFirst());
 
-        TestUtils.validateCurrentRecord("", c, testValues);
+        TestUtilities.validateCurrentRecord("", c, testValues);
 
         assertFalse("Error: Video table has more than one record.", c.moveToNext());
         c.close();
@@ -138,7 +138,7 @@ public class TestDb extends AndroidTestCase {
     public void testMovieTable(){
         // insert our test records into the database
         SQLiteDatabase db = new MovieDbHelper(mContext).getWritableDatabase();
-        ContentValues testValues = TestUtils.createInsideOutMovieValues();
+        ContentValues testValues = TestUtilities.createInsideOutMovieValues();
 
         long rowId;
         rowId = db.insert(MovieContract.MovieEntry.TABLE_NAME, null, testValues);
@@ -159,7 +159,7 @@ public class TestDb extends AndroidTestCase {
         assertTrue("Error: no records returned from querying the movie table",
                 c.moveToFirst());
 
-        TestUtils.validateCurrentRecord("", c, testValues);
+        TestUtilities.validateCurrentRecord("", c, testValues);
 
         assertFalse("Error: Movie table has more than one record.", c.moveToNext());
         c.close();

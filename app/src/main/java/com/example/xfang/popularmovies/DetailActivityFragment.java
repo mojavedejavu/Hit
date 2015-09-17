@@ -20,13 +20,10 @@ import com.example.xfang.popularmovies.model.Movie;
 import com.example.xfang.popularmovies.model.Video;
 import com.squareup.picasso.Picasso;
 
-import org.apache.http.protocol.HTTP;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.w3c.dom.Text;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,7 +31,6 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -81,7 +77,7 @@ public class DetailActivityFragment extends Fragment {
             mRatingView.setText(Double.toString(movie.rating));
             mPlotView.setText(movie.plot);
 
-            mMovieId = movie.id;
+            mMovieId = movie.movie_id;
 
             Uri posterUri = movie.getUri("w" + Movie.API_POSTER_SIZE);
             Picasso.with(getActivity())
@@ -229,7 +225,7 @@ public class DetailActivityFragment extends Fragment {
 
                     Video video = new Video(mMovieId, name, site, key);
                     videos.add(video);
-                    Log.d(LOG_TAG, "Added new video: " + video.toString());
+                    Log.d(LOG_TAG, "Added new video: " + video.toStringWithVideoKey());
                 }
 
             }

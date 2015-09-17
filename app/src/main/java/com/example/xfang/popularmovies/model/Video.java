@@ -20,4 +20,8 @@ public class Video {
     public String toString(){
         return site + ": " + name;
     }
+
+    public String toStringWithVideoKey(){
+        return site + ": " + name + " key: " + video_key;
+    }
 }

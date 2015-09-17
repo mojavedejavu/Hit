@@ -23,7 +23,8 @@ public class MovieProvider extends ContentProvider {
     static final int ALL_MOVIES = 100;
     static final int SINGLE_MOVIE = 101;
     static final int ALL_VIDEOS = 200;
-    static final int VIDEOS_SAME_MOVIE = 201;
+    static final int SINGLE_VIDEO = 201;
+    static final int VIDEOS_SAME_MOVIE = 202;
 
     static UriMatcher buildUriMatcher(){
         UriMatcher matcher = new UriMatcher(UriMatcher.NO_MATCH);
@@ -34,6 +35,7 @@ public class MovieProvider extends ContentProvider {
 
         matcher.addURI(authority, MovieContract.PATH_VIDEO, ALL_VIDEOS);
         matcher.addURI(authority, MovieContract.PATH_VIDEO + "/*", VIDEOS_SAME_MOVIE);
+        matcher.addURI(authority,MovieContract.PATH_VIDEO + "/*/*", SINGLE_VIDEO);
         return matcher;
     }
 
@@ -50,6 +52,8 @@ public class MovieProvider extends ContentProvider {
                 return VideoEntry.CONTENT_TYPE;
             case VIDEOS_SAME_MOVIE:
                 return VideoEntry.CONTENT_TYPE;
+            case SINGLE_VIDEO:
+                return VideoEntry.CONTENT_ITEM_TYPE;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -57,7 +61,73 @@ public class MovieProvider extends ContentProvider {
 
     @Override
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs){
-        return 0;
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        int match = mUriMatcher.match(uri);
+        int rows;
+        switch (match){
+            case ALL_MOVIES: {
+                rows = db.update(MovieEntry.TABLE_NAME, values, selection, selectionArgs);
+                break;
+            }
+            case ALL_VIDEOS:{
+                rows = db.update(VideoEntry.TABLE_NAME, values, selection, selectionArgs);
+                break;
+            }
+
+            default:{
+                throw new UnsupportedOperationException("Update: Unknown uri " + uri);
+            }
+        }
+
+        if (rows != 0) {
+            getContext().getContentResolver().notifyChange(uri, null);
+        }
+        return rows;
+    }
+
+    @Override
+    public int bulkInsert(Uri uri, ContentValues[] values) {
+        final SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        final int match = mUriMatcher.match(uri);
+        switch (match) {
+            case ALL_MOVIES: {
+                db.beginTransaction();
+                int returnCount = 0;
+                try {
+                    for (ContentValues value : values) {
+                        long _id = db.insert(MovieEntry.TABLE_NAME, null, value);
+                        if (_id != -1) {
+                            returnCount++;
+                        }
+                    }
+                    db.setTransactionSuccessful();
+                } finally {
+                    db.endTransaction();
+                }
+                getContext().getContentResolver().notifyChange(uri, null);
+                return returnCount;
+            }
+            case ALL_VIDEOS: {
+                db.beginTransaction();
+                int returnCount = 0;
+                try {
+                    for (ContentValues value : values) {
+                        long _id = db.insert(VideoEntry.TABLE_NAME, null, value);
+                        if (_id != -1) {
+                            returnCount++;
+                        }
+                    }
+                    db.setTransactionSuccessful();
+                } finally {
+                    db.endTransaction();
+                }
+                getContext().getContentResolver().notifyChange(uri, null);
+                return returnCount;
+            }
+
+            default:
+                return super.bulkInsert(uri, values);
+        }
     }
 
     @Override
@@ -106,7 +176,31 @@ public class MovieProvider extends ContentProvider {
 
     @Override
     public int delete (Uri uri, String selection, String[] selectionArgs){
-        return 0;
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        int match = mUriMatcher.match(uri);
+        int rows;
+        // makes delete all rows return the number of rows deleted
+        if (selection == null){
+            selection = "1";
+        }
+        switch (match){
+            case ALL_MOVIES: {
+                rows = db.delete(MovieEntry.TABLE_NAME, selection, selectionArgs);
+                break;
+            }
+            case ALL_VIDEOS:{
+                rows = db.delete(VideoEntry.TABLE_NAME, selection, selectionArgs);
+                break;
+            }
+
+            default:{
+                throw new UnsupportedOperationException("Delete: Unknown uri " + uri);
+            }
+        }
+        if (rows != 0) {
+            getContext().getContentResolver().notifyChange(uri, null);
+        }
+        return rows;
     }
 
     @Override
@@ -157,10 +251,27 @@ public class MovieProvider extends ContentProvider {
                 Log.d(LOG_TAG, "Querying videos from movie with id " + movie_id);
 
                 c = mDbHelper.getReadableDatabase().query(
-                        MovieEntry.TABLE_NAME,
+                        VideoEntry.TABLE_NAME,
                         projection,
                         new String(VideoEntry.COL_MOVIE_ID + " = ? "),
                         new String[]{movie_id},
+                        null,
+                        null,
+                        sortOrder);
+                break;
+            }
+
+            case SINGLE_VIDEO: {
+                String movie_id = VideoEntry.getMovieIdFromUri(uri);
+                String video_key = VideoEntry.getVideoKeyFromUri(uri);
+                Log.d(LOG_TAG, "Querying video " + video_key + " from movie " + movie_id);
+
+                c = mDbHelper.getReadableDatabase().query(
+                        MovieEntry.TABLE_NAME,
+                        projection,
+                        new String(VideoEntry.COL_MOVIE_ID + " = ? AND " +
+                                VideoEntry.COL_VIDEO_KEY   + " = ?"),
+                        new String[]{movie_id, video_key},
                         null,
                         null,
                         sortOrder);
