@@ -15,6 +15,9 @@ import android.util.Log;
 import com.example.xfang.popularmovies.data.MovieContract.MovieEntry;
 
 import com.example.xfang.popularmovies.data.MovieContract.VideoEntry;
+
+import java.util.Arrays;
+
 /**
  * Created by xfang on 8/14/15.
  */
@@ -145,6 +148,11 @@ public class TestProvider extends AndroidTestCase {
                 VideoEntry.CONTENT_ITEM_TYPE, type);
     }
 
+    /*
+    This test uses the database directly to insert and then uses the ContentProvider to
+    read out the data.  Uncomment this test to see if your queries are
+    performing correctly.
+    */
     public void testBasicVideoQueries() {
         // insert our test records into the database
         SQLiteDatabase db = new MovieDbHelper(mContext).getWritableDatabase();
@@ -177,6 +185,12 @@ public class TestProvider extends AndroidTestCase {
         }
     }
 
+
+    /*
+        This test uses the database directly to insert and then uses the ContentProvider to
+        read out the data.  Uncomment this test to see if the basic query functionality
+        given in the ContentProvider is working correctly.
+     */
     public void testBasicMovieQuery() {
         // insert our test records into the database
         //SQLiteDatabase db = new MovieDbHelper(mContext).getWritableDatabase();
@@ -203,7 +217,7 @@ public class TestProvider extends AndroidTestCase {
     This test uses the provider to insert and then update the data. Uncomment this test to
     see if your update location is functioning correctly.
  */
-    public void testUpdateVideo() {
+    public void testUpdateReadVideoEntry() {
         // Create a new map of values, where column names are the keys
         ContentValues values = TestUtilities.createInsideOutTrailerValues();
 
@@ -250,138 +264,168 @@ public class TestProvider extends AndroidTestCase {
                 null    // sort order
         );
 
-        TestUtilities.validateCursor("testUpdateVideo. Error validating video entry update.",
+        TestUtilities.validateCursor("testUpdateReadVideoEntry. Error validating video entry update.",
                 cursor, updatedValues);
 
         cursor.close();
     }
 
-//    public void testDeleteRecords() {
-//        testInsertReadProvider();
-//
-//        // Register a content observer for our location delete.
-//        TestUtilities.TestContentObserver movieObserver = TestUtilities.getTestContentObserver();
-//        mContext.getContentResolver().registerContentObserver(MovieEntry.CONTENT_URI, true, movieObserver);
-//
-//        // Register a content observer for our weather delete.
-//        TestUtilities.TestContentObserver videoObserver = TestUtilities.getTestContentObserver();
-//        mContext.getContentResolver().registerContentObserver(VideoEntry.CONTENT_URI, true, videoObserver);
-//
-//        deleteAllRecordsFromProvider();
-//
-//        // Students: If either of these fail, you most-likely are not calling the
-//        // getContext().getContentResolver().notifyChange(uri, null); in the ContentProvider
-//        // delete.  (only if the insertReadProvider is succeeding)
-//        movieObserver.waitForNotificationOrFail();
-//        videoObserver.waitForNotificationOrFail();
-//
-//        mContext.getContentResolver().unregisterContentObserver(movieObserver);
-//        mContext.getContentResolver().unregisterContentObserver(videoObserver);
-//    }
-//
-////     Make sure we can still delete after adding/updating stuff
-////
-////     Student: Uncomment this test after you have completed writing the insert functionality
-////     in your provider.  It relies on insertions with testInsertReadProvider, so insert and
-////     query functionality must also be complete before this test can be used.
-//    public void testInsertReadProvider() {
-//        ContentValues testValues = TestUtilities.createInsideOutTrailerValues();
-//
-//        // Register a content observer for our insert.  This time, directly with the content resolver
-//        TestUtilities.TestContentObserver tco = TestUtilities.getTestContentObserver();
-//        mContext.getContentResolver().registerContentObserver(VideoEntry.CONTENT_URI, true, tco);
-//        Uri videoUri = mContext.getContentResolver().insert(VideoEntry.CONTENT_URI, testValues);
-//
-//        // Did our content observer get called?  Students:  If this fails, your insert location
-//        // isn't calling getContext().getContentResolver().notifyChange(uri, null);
-//        tco.waitForNotificationOrFail();
-//        mContext.getContentResolver().unregisterContentObserver(tco);
-//
-//        long videoRowId = ContentUris.parseId(videoUri);
-//
-//        // Verify we got a row back.
-//        assertTrue(videoRowId != -1);
-//
-//        // Data's inserted.  IN THEORY.  Now pull some out to stare at it and verify it made
-//        // the round trip.
-//
-//        // A cursor is your primary interface to the query results.
-//        Cursor cursor = mContext.getContentResolver().query(
-//                VideoEntry.CONTENT_URI,
-//                null, // leaving "columns" null just returns all the columns.
-//                null, // cols for "where" clause
-//                null, // values for "where" clause
-//                null  // sort order
-//        );
-//
-//        TestUtilities.validateCursor("testInsertReadProvider. Error validating LocationEntry.",
-//                cursor, testValues);
-//
-//        // Fantastic.  Now that we have a location, add some weather!
-//        ContentValues movieValues = TestUtilities.createInsideOutMovieValues();
-//        // The TestContentObserver is a one-shot class
-//        tco = TestUtilities.getTestContentObserver();
-//
-//        mContext.getContentResolver().registerContentObserver(MovieEntry.CONTENT_URI, true, tco);
-//
-//        Uri weatherInsertUri = mContext.getContentResolver()
-//                .insert(MovieEntry.CONTENT_URI, movieValues);
-//        assertTrue(weatherInsertUri != null);
-//
-//        // Did our content observer get called?  Students:  If this fails, your insert weather
-//        // in your ContentProvider isn't calling
-//        // getContext().getContentResolver().notifyChange(uri, null);
-//        tco.waitForNotificationOrFail();
-//        mContext.getContentResolver().unregisterContentObserver(tco);
-//
-//        // A cursor is your primary interface to the query results.
-//        Cursor weatherCursor = mContext.getContentResolver().query(
-//                MovieEntry.CONTENT_URI,  // Table to Query
-//                null, // leaving "columns" null just returns all the columns.
-//                null, // cols for "where" clause
-//                null, // values for "where" clause
-//                null // columns to group by
-//        );
-//
-//        TestUtilities.validateCursor("testInsertReadProvider. Error validating WeatherEntry insert.",
-//                weatherCursor, movieValues);
-//
-//        // Add the location values in with the weather data so that we can make
-//        // sure that the join worked and we actually get all the values back
-//        movieValues.putAll(testValues);
-//
-//        // Get the joined Weather and Location data
-//        weatherCursor = mContext.getContentResolver().query(
-//                MovieEntry.buildWeatherLocation(TestUtilities.TEST_LOCATION),
-//                null, // leaving "columns" null just returns all the columns.
-//                null, // cols for "where" clause
-//                null, // values for "where" clause
-//                null  // sort order
-//        );
-//        TestUtilities.validateCursor("testInsertReadProvider.  Error validating joined Weather and Location Data.",
-//                weatherCursor, movieValues);
-//
-//        // Get the joined Weather and Location data with a start date
-//        weatherCursor = mContext.getContentResolver().query(
-//                WeatherEntry.buildWeatherLocationWithStartDate(
-//                        TestUtilities.TEST_LOCATION, TestUtilities.TEST_DATE),
-//                null, // leaving "columns" null just returns all the columns.
-//                null, // cols for "where" clause
-//                null, // values for "where" clause
-//                null  // sort order
-//        );
-//        TestUtilities.validateCursor("testInsertReadProvider.  Error validating joined Weather and Location Data with start date.",
-//                weatherCursor, movieValues);
-//
-//        // Get the joined Weather data for a specific date
-//        weatherCursor = mContext.getContentResolver().query(
-//                WeatherEntry.buildWeatherLocationWithDate(TestUtilities.TEST_LOCATION, TestUtilities.TEST_DATE),
-//                null,
-//                null,
-//                null,
-//                null
-//        );
-//        TestUtilities.validateCursor("testInsertReadProvider.  Error validating joined Weather and Location data for a specific date.",
-//                weatherCursor, movieValues);
-//    }
+
+    // Make sure we can still delete after adding/updating stuff
+    //
+    // Student: Uncomment this test after you have completed writing the insert functionality
+    // in your provider.  It relies on insertions with testInsertReadProvider, so insert and
+    // query functionality must also be complete before this test can be used.
+    public void testInsertReadProvider() {
+        ContentValues testValues = TestUtilities.createInsideOutTrailerValues();
+
+        // Register a content observer for our insert.  This time, directly with the content resolver
+        TestUtilities.TestContentObserver tco = TestUtilities.getTestContentObserver();
+        mContext.getContentResolver().registerContentObserver(VideoEntry.CONTENT_URI, true, tco);
+        Uri locationUri = mContext.getContentResolver().insert(VideoEntry.CONTENT_URI, testValues);
+
+        // Did our content observer get called?  Students:  If this fails, your insert location
+        // isn't calling getContext().getContentResolver().notifyChange(uri, null);
+        tco.waitForNotificationOrFail();
+        mContext.getContentResolver().unregisterContentObserver(tco);
+
+        long locationRowId = ContentUris.parseId(locationUri);
+
+        // Verify we got a row back.
+        assertTrue(locationRowId != -1);
+
+        // Data's inserted.  IN THEORY.  Now pull some out to stare at it and verify it made
+        // the round trip.
+
+        // A cursor is your primary interface to the query results.
+        Cursor cursor = mContext.getContentResolver().query(
+                VideoEntry.CONTENT_URI,
+                null, // leaving "columns" null just returns all the columns.
+                null, // cols for "where" clause
+                null, // values for "where" clause
+                null  // sort order
+        );
+
+        TestUtilities.validateCursor("testInsertReadProvider. Error validating LocationEntry.",
+                cursor, testValues);
+
+        // Fantastic.  Now that we've tested VideoEntry, let's test MovieEntry
+        ContentValues movieValues = TestUtilities.createInsideOutMovieValues();
+        // The TestContentObserver is a one-shot class
+        tco = TestUtilities.getTestContentObserver();
+
+        mContext.getContentResolver().registerContentObserver(MovieEntry.CONTENT_URI, true, tco);
+
+        Uri movieInsertUri = mContext.getContentResolver()
+                .insert(MovieEntry.CONTENT_URI, movieValues);
+        assertTrue(movieInsertUri != null);
+
+        // Did our content observer get called?  Students:  If this fails, your insert weather
+        // in your ContentProvider isn't calling
+        // getContext().getContentResolver().notifyChange(uri, null);
+        tco.waitForNotificationOrFail();
+        mContext.getContentResolver().unregisterContentObserver(tco);
+
+        // A cursor is your primary interface to the query results.
+        Cursor weatherCursor = mContext.getContentResolver().query(
+                MovieEntry.CONTENT_URI,  // Table to Query
+                null, // leaving "columns" null just returns all the columns.
+                null, // cols for "where" clause
+                null, // values for "where" clause
+                null // columns to group by
+        );
+
+        TestUtilities.validateCursor("testInsertReadProvider. Error validating WeatherEntry insert.",
+                weatherCursor, movieValues);
+    }
+
+    public void testDeleteRecords() {
+        testInsertReadProvider();
+
+        // Register a content observer for our location delete.
+        TestUtilities.TestContentObserver movieObserver = TestUtilities.getTestContentObserver();
+        mContext.getContentResolver().registerContentObserver(MovieEntry.CONTENT_URI, true, movieObserver);
+
+        // Register a content observer for our weather delete.
+        TestUtilities.TestContentObserver videoObserver = TestUtilities.getTestContentObserver();
+        mContext.getContentResolver().registerContentObserver(VideoEntry.CONTENT_URI, true, videoObserver);
+
+        deleteAllRecordsFromProvider();
+
+        // Students: If either of these fail, you most-likely are not calling the
+        // getContext().getContentResolver().notifyChange(uri, null); in the ContentProvider
+        // delete.  (only if the insertReadProvider is succeeding)
+        movieObserver.waitForNotificationOrFail();
+        videoObserver.waitForNotificationOrFail();
+
+        mContext.getContentResolver().unregisterContentObserver(movieObserver);
+        mContext.getContentResolver().unregisterContentObserver(videoObserver);
+    }
+
+
+    static ContentValues createInsideOutTrailerValues() {
+        // Create a new map of values, where column names are the keys
+        ContentValues testValues = new ContentValues();
+        testValues.put(VideoEntry.COL_MOVIE_ID, "150540");
+        testValues.put(VideoEntry.COL_VIDEO_KEY,"_MC3XuMvsDI");
+        testValues.put(VideoEntry.COL_SITE, "YouTube");
+        testValues.put(VideoEntry.COL_VIDEO_TITLE,"Inside Out Trailer 2");
+
+        return testValues;
+    }
+
+    static private final int BULK_INSERT_RECORDS_TO_INSERT = 10;
+    static ContentValues[] createBulkInsertVideoValues() {
+        ContentValues[] returnContentValues = new ContentValues[BULK_INSERT_RECORDS_TO_INSERT];
+        Arrays.fill(returnContentValues, TestUtilities.createInsideOutTrailerValues());
+
+        return returnContentValues;
+    }
+
+    // Student: Uncomment this test after you have completed writing the BulkInsert functionality
+    // in your provider.  Note that this test will work with the built-in (default) provider
+    // implementation, which just inserts records one-at-a-time, so really do implement the
+    // BulkInsert ContentProvider function.
+    public void testBulkInsert() {
+
+        // Now we can bulkInsert some weather.  In fact, we only implement BulkInsert for weather
+        // entries.  With ContentProviders, you really only have to implement the features you
+        // use, after all.
+        ContentValues[] bulkInsertContentValues = createBulkInsertVideoValues();
+
+        // Register a content observer for our bulk insert.
+        TestUtilities.TestContentObserver videoObserver = TestUtilities.getTestContentObserver();
+        mContext.getContentResolver().registerContentObserver(VideoEntry.CONTENT_URI, true, videoObserver);
+
+        int insertCount = mContext.getContentResolver().bulkInsert(VideoEntry.CONTENT_URI, bulkInsertContentValues);
+
+        // Students:  If this fails, it means that you most-likely are not calling the
+        // getContext().getContentResolver().notifyChange(uri, null); in your BulkInsert
+        // ContentProvider method.
+        videoObserver.waitForNotificationOrFail();
+        mContext.getContentResolver().unregisterContentObserver(videoObserver);
+
+        assertEquals(insertCount, BULK_INSERT_RECORDS_TO_INSERT);
+
+        // A cursor is your primary interface to the query results.
+        Cursor cursor = mContext.getContentResolver().query(
+                VideoEntry.CONTENT_URI,
+                null, // leaving "columns" null just returns all the columns.
+                null, // cols for "where" clause
+                null, // values for "where" clause
+                null  // sort order
+        );
+
+        // we should have as many records in the database as we've inserted
+        assertEquals(cursor.getCount(), BULK_INSERT_RECORDS_TO_INSERT);
+
+        // and let's make sure they match the ones we created
+        cursor.moveToFirst();
+        for ( int i = 0; i < BULK_INSERT_RECORDS_TO_INSERT; i++, cursor.moveToNext() ) {
+            TestUtilities.validateCurrentRecord("testBulkInsert.  Error validating VideoEntry " + i,
+                    cursor, bulkInsertContentValues[i]);
+        }
+        cursor.close();
+    }
+
 }
