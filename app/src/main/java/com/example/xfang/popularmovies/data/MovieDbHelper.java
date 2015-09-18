@@ -14,7 +14,7 @@ public class MovieDbHelper extends SQLiteOpenHelper {
 
 
     // version 2 : added _ID column
-    public static final int DB_VERSION = 2;
+    public static final int DB_VERSION = 3;
     public static final String DB_NAME = "data.db";
 
     public MovieDbHelper(Context context){
@@ -27,7 +27,7 @@ public class MovieDbHelper extends SQLiteOpenHelper {
                 MovieEntry._ID + " INTEGER PRIMARY KEY," +
                 MovieEntry.COL_MOVIE_ID + " TEXT," +
                 MovieEntry.COL_MOVIE_TITLE + " TEXT NOT NULL," +
-                MovieEntry.COL_POSTERPATH + " TEXT NOT NULL," +
+                MovieEntry.COL_POSTER_PATH + " TEXT NOT NULL," +
                 MovieEntry.COL_DATE + " TEXT NOT NULL," +
                 MovieEntry.COL_PLOT + " TEXT NOT NULL," +
                 MovieEntry.COL_RATING + " DECIMAL(1,1) NOT NULL" +

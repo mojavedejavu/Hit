@@ -1,7 +1,9 @@
 package com.example.xfang.popularmovies;
 
+import android.content.ContentValues;
 import android.content.Intent;
-import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
@@ -15,6 +17,7 @@ import android.widget.AdapterView;
 import android.widget.GridView;
 
 import com.example.xfang.popularmovies.model.Movie;
+import com.example.xfang.popularmovies.data.MovieContract.MovieEntry;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -27,7 +30,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.prefs.Preferences;
+import java.util.Vector;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -82,6 +85,10 @@ public class MainActivityFragment extends Fragment {
 
         final String LOG_TAG = FetchMoviesTask.class.getSimpleName();
 
+        String convertContentValuesToString(ContentValues values) {
+                return values.getAsString(MovieEntry.COL_MOVIE_ID) + " " +
+                        values.getAsString(MovieEntry.COL_MOVIE_TITLE);
+        }
 
         ArrayList<Movie> getMoviesFromJson(String JSONString) throws JSONException {
             ArrayList<Movie> movies = new ArrayList<>();
@@ -105,6 +112,10 @@ public class MainActivityFragment extends Fragment {
                 JSONObject moviesJson = new JSONObject(JSONString);
                 JSONArray moviesArray = moviesJson.getJSONArray(API_LIST);
 
+                // Insert the new movie information into the database
+                Vector<ContentValues> cVVector = new Vector<ContentValues>(moviesArray.length());
+
+
                 for (int i = 0; i < moviesArray.length(); i++) {
                     // These are the values that will be collected.
                     String title;
@@ -124,9 +135,40 @@ public class MainActivityFragment extends Fragment {
                     date = movie.getString(API_DATE);
                     id = movie.getString(API_ID);
 
-                    Movie movieObject = new Movie(title, imagePath, plot, rating, date, id);
-                    movies.add(movieObject);
-                    Log.d(LOG_TAG, "Added new movie: " + movieObject.toString());
+                    Log.d("poster", imagePath);
+
+                    // insert into the database
+                    ContentValues movieValues = new ContentValues();
+                    movieValues.put(MovieEntry.COL_MOVIE_TITLE, title);
+                    movieValues.put(MovieEntry.COL_POSTER_PATH, imagePath);
+                    movieValues.put(MovieEntry.COL_PLOT, plot);
+                    movieValues.put(MovieEntry.COL_RATING, rating);
+                    movieValues.put(MovieEntry.COL_DATE, date);
+                    movieValues.put(MovieEntry.COL_MOVIE_ID, id);
+
+                    cVVector.add(movieValues);
+                }
+
+                // add to database
+                if ( cVVector.size() > 0 ) {
+                    ContentValues[] cvArray = new ContentValues[cVVector.size()];
+                    cVVector.toArray(cvArray);
+                    int bulkInsertCount = getActivity().getContentResolver().bulkInsert(
+                            MovieEntry.CONTENT_URI, cvArray);
+                }
+
+                Cursor cur = getActivity().getContentResolver().query(MovieEntry.CONTENT_URI,
+                        null, null, null, null);
+
+                if ( cur.moveToFirst() ) {
+                    do {
+                        ContentValues cv = new ContentValues();
+                        DatabaseUtils.cursorRowToContentValues(cur, cv);
+                        Movie movieObject = new Movie(cv);
+                        Log.d("poster", "reading out from db: " + movieObject.toString());
+                        movies.add(movieObject);
+                        Log.d(LOG_TAG, "Successfully read new movie from the database: "+ movieObject.toString());
+                    } while (cur.moveToNext());
                 }
 
                 Log.d(LOG_TAG, "FetchMoviesTask Complete. ");
@@ -197,6 +239,7 @@ public class MainActivityFragment extends Fragment {
                 }
                 reader = new BufferedReader(new InputStreamReader(inputStream));
 
+                Log.d("poster", "FINE HERE 1");
                 String line;
                 while ((line = reader.readLine()) != null) {
                     // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
@@ -205,10 +248,14 @@ public class MainActivityFragment extends Fragment {
                     buffer.append(line + "\n");
                 }
 
+                Log.d("poster", "FINE HERE 2");
+
                 if (buffer.length() == 0) {
                     // Stream was empty.  No point in parsing.
                     return null;
                 }
+                Log.d("poster", "FINE HERE 3");
+
                 String moviesJsonStr = buffer.toString();
 
                 Log.d(LOG_TAG, moviesJsonStr);
@@ -217,6 +264,7 @@ public class MainActivityFragment extends Fragment {
 
             } catch (IOException e) {
                 Log.e(LOG_TAG, "Error ", e);
+                e.printStackTrace();
                 // If the code didn't successfully get the weather data, there's no point in attempting
                 // to parse it.
             } catch (JSONException e) {

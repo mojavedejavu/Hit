@@ -32,7 +32,7 @@ public class TestUtilities {
         testValues.put(MovieEntry.COL_MOVIE_ID, "150540");
         testValues.put(MovieEntry.COL_MOVIE_TITLE, "Inside Out");
         testValues.put(MovieEntry.COL_DATE,"2015-06-19");
-        testValues.put(MovieEntry.COL_POSTERPATH,"/aAmfIX3TT40zUHGcCKrlOZRKC7u.jpg");
+        testValues.put(MovieEntry.COL_POSTER_PATH,"/aAmfIX3TT40zUHGcCKrlOZRKC7u.jpg");
         testValues.put(MovieEntry.COL_PLOT,"Growing up can be a bumpy road, and it's no exception for Riley, who i…");
         testValues.put(MovieEntry.COL_RATING,"8.2");
         return testValues;

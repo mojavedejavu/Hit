@@ -24,7 +24,7 @@ public class MovieContract {
         public static final String COL_MOVIE_ID = "movie_id";
         public static final String COL_MOVIE_TITLE = "movie_title";
         public static final String COL_PLOT = "plot";
-        public static final String COL_POSTERPATH = "image_path";
+        public static final String COL_POSTER_PATH = "poster_path";
         public static final String COL_RATING = "rating";
         public static final String COL_DATE = "date";
 

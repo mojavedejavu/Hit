@@ -77,7 +77,7 @@ public class DetailActivityFragment extends Fragment {
             mRatingView.setText(Double.toString(movie.rating));
             mPlotView.setText(movie.plot);
 
-            mMovieId = movie.movie_id;
+            mMovieId = movie.movieId;
 
             Uri posterUri = movie.getUri("w" + Movie.API_POSTER_SIZE);
             Picasso.with(getActivity())

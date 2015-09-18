@@ -54,7 +54,7 @@ public class TestDb extends AndroidTestCase {
         // test columns in movieEntry table
         HashSet<String> movieColumnsSet = new HashSet<>();
         movieColumnsSet.add(MovieEntry.COL_DATE);
-        movieColumnsSet.add(MovieEntry.COL_POSTERPATH);
+        movieColumnsSet.add(MovieEntry.COL_POSTER_PATH);
         movieColumnsSet.add(MovieEntry.COL_MOVIE_ID);
         movieColumnsSet.add(MovieEntry.COL_MOVIE_TITLE);
         movieColumnsSet.add(MovieEntry.COL_PLOT);
