@@ -14,6 +14,7 @@ public class MovieDbHelper extends SQLiteOpenHelper {
 
 
     // version 2 : added _ID column
+    // version 3 : unified database column names and Movie model data members.
     public static final int DB_VERSION = 3;
     public static final String DB_NAME = "data.db";
 
