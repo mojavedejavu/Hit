@@ -91,8 +91,6 @@ public class FetchMoviesTask extends AsyncTask<Void, Void, ArrayList<Movie>> {
                 date = movie.getString(API_DATE);
                 id = movie.getString(API_ID);
 
-                Log.d("poster", imagePath);
-
                 // insert into the database
                 ContentValues movieValues = new ContentValues();
                 movieValues.put(MovieContract.MovieEntry.COL_MOVIE_TITLE, title);
@@ -121,9 +119,8 @@ public class FetchMoviesTask extends AsyncTask<Void, Void, ArrayList<Movie>> {
                     ContentValues cv = new ContentValues();
                     DatabaseUtils.cursorRowToContentValues(cur, cv);
                     Movie movieObject = new Movie(cv);
-                    Log.d("poster", "reading out from db: " + movieObject.toString());
                     movies.add(movieObject);
-                    Log.d(LOG_TAG, "Successfully read new movie from the database: "+ movieObject.toString());
+                    Log.d(LOG_TAG, "Read new movie from the DATABASE: "+ movieObject.toString());
                 } while (cur.moveToNext());
             }
 
@@ -195,7 +192,6 @@ public class FetchMoviesTask extends AsyncTask<Void, Void, ArrayList<Movie>> {
             }
             reader = new BufferedReader(new InputStreamReader(inputStream));
 
-            Log.d("poster", "FINE HERE 1");
             String line;
             while ((line = reader.readLine()) != null) {
                 // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
@@ -204,19 +200,15 @@ public class FetchMoviesTask extends AsyncTask<Void, Void, ArrayList<Movie>> {
                 buffer.append(line + "\n");
             }
 
-            Log.d("poster", "FINE HERE 2");
-
             if (buffer.length() == 0) {
                 // Stream was empty.  No point in parsing.
                 return null;
             }
-            Log.d("poster", "FINE HERE 3");
 
             String moviesJsonStr = buffer.toString();
 
             Log.d(LOG_TAG, moviesJsonStr);
             movies = getMoviesFromJson(moviesJsonStr);
-
 
         } catch (IOException e) {
             Log.e(LOG_TAG, "Error ", e);

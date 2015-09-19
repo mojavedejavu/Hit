@@ -10,6 +10,7 @@ import android.util.Log;
 
 import com.example.xfang.popularmovies.data.MovieContract.MovieEntry;
 import com.example.xfang.popularmovies.data.MovieContract.VideoEntry;
+import com.example.xfang.popularmovies.model.Movie;
 
 /**
  * Created by xfang on 8/14/15.
@@ -95,9 +96,18 @@ public class MovieProvider extends ContentProvider {
                 int returnCount = 0;
                 try {
                     for (ContentValues value : values) {
-                        long _id = db.insert(MovieEntry.TABLE_NAME, null, value);
-                        if (_id != -1) {
-                            returnCount++;
+                        Cursor queryCursor = getContext().getContentResolver().query(
+                                MovieEntry.CONTENT_URI,
+                                null, // return all columns
+                                MovieEntry.COL_MOVIE_ID + " = ?", // rows to return
+                                new String[]{value.getAsString(MovieEntry.COL_MOVIE_ID)},
+                                null // sort order
+                        );
+                        if (!queryCursor.moveToFirst()) {
+                            long _id = db.insert(MovieEntry.TABLE_NAME, null, value);
+                            if (_id != -1) {
+                                returnCount++;
+                            }
                         }
                     }
                     db.setTransactionSuccessful();
@@ -138,12 +148,25 @@ public class MovieProvider extends ContentProvider {
 
         switch (match){
             case ALL_MOVIES: {
-                long _id = db.insert(MovieEntry.TABLE_NAME, null, values);
-                if (_id > 0) {
-                    //String movieId = (String) values.get(MovieEntry.COL_MOVIE_ID);
-                    returnUri = MovieEntry.buildMovieUri(_id);
-                } else {
-                    throw new android.database.SQLException("Failed to insert row into " + uri);
+                Cursor queryCursor = getContext().getContentResolver().query(
+                        MovieEntry.CONTENT_URI,
+                        null, // return all columns
+                        MovieEntry.COL_MOVIE_ID + " = ?", // rows to return
+                        new String[]{values.getAsString(MovieEntry.COL_MOVIE_ID)},
+                        null // sort order
+                );
+                if (!queryCursor.moveToFirst()) {
+                    long _id = db.insert(MovieEntry.TABLE_NAME, null, values);
+                    if (_id > 0) {
+                        //String movieId = (String) values.get(MovieEntry.COL_MOVIE_ID);
+                        returnUri = MovieEntry.buildMovieUri(_id);
+                    } else {
+                        throw new android.database.SQLException("Failed to insert row into " + uri);
+                    }
+                }
+                else{
+                    int rowId = queryCursor.getInt(queryCursor.getColumnIndex(MovieEntry._ID));
+                    returnUri = MovieEntry.buildMovieUri(rowId);
                 }
                 break;
             }
