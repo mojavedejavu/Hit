@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 
+import com.example.xfang.popularmovies.MainActivityFragment;
 import com.example.xfang.popularmovies.data.MovieContract.MovieEntry;
 
 
@@ -14,6 +15,7 @@ import com.example.xfang.popularmovies.data.MovieContract.MovieEntry;
 public class Movie {
 
     public static final String EXTRA_MOVIE ="com.example.xfang.movie";
+    public static final String EXTRA_MOVIE_URI = "com.example.xfang.movieuri";
 
 //    public static final String KEY_TITLE = "title";
 //    public static final String KEY_POSTERPATH = "poster_path";
@@ -88,8 +90,8 @@ public class Movie {
 
     static public Uri getPosterUri(Cursor cursor, String size){
         String baseUrl = "http://image.tmdb.org/t/p/";
-        int posterPathId = cursor.getColumnIndex(MovieEntry.COL_POSTER_PATH);
-        String posterPath = cursor.getString(posterPathId);
+        //int posterPathId = cursor.getColumnIndex(MovieEntry.COL_POSTER_PATH);
+        String posterPath = cursor.getString(MainActivityFragment.ID_COL_POSTER_PATH);
         Uri uri = Uri.parse(baseUrl).buildUpon().appendPath(size).appendEncodedPath(posterPath).build();
 
         return uri;

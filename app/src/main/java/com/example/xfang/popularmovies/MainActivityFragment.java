@@ -1,6 +1,8 @@
 package com.example.xfang.popularmovies;
 
+import android.content.Intent;
 import android.database.Cursor;
+import android.net.Uri;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
@@ -9,7 +11,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.content.CursorLoader;
@@ -36,18 +37,21 @@ public class MainActivityFragment extends Fragment
     // Since we only need movie title and poster path on this screen, we only
     // ask for these so that our app runs a little bit faster.
     // NOTE: if this change, the column IDs need to change too
-    private static final String[] MOVIE_COLUMNS = {
+    private static final String[] MOVIE_MAINFRAGMENT_COLUMNS = {
             MovieEntry._ID,
             MovieEntry.COL_MOVIE_TITLE,
-            MovieEntry.COL_POSTER_PATH
+            MovieEntry.COL_POSTER_PATH,
+            MovieEntry.COL_MOVIE_ID
 
     };
 
-//    // NOTE: These are tied to MOVIE_COLUMNS. If MOVIE_COLUMNS changes,
-//    // these need to change too.
-//    static final int _ID_ID = 0;
-//    static final int COL_MOVIE_TITLE_ID = 1;
-//    static final int COL_POSTER_PATH = 2;
+    // NOTE: These are tied to MOVIE_MAINFRAGMENT_COLUMNS. If MOVIE_MAINFRAGMENT_COLUMNS changes,
+    // these need to change too.
+    public static final int ID_COL_ID = 0;
+    public static final int ID_COL_MOVIE_TITLE = 1;
+    public static final int ID_COL_POSTER_PATH = 2;
+    public static final int ID_COL_MOVIE_ID = 3;
+
 
     public MainActivityFragment() {
 
@@ -65,7 +69,7 @@ public class MainActivityFragment extends Fragment
         return new CursorLoader(
                 getActivity(),
                 MovieEntry.CONTENT_URI,
-                MOVIE_COLUMNS, // projection
+                MOVIE_MAINFRAGMENT_COLUMNS, // projection
                 null,
                 null,
                 null
@@ -88,23 +92,30 @@ public class MainActivityFragment extends Fragment
 
         mAdapter = new ImageAdapter(getActivity(),null, 0);
 
-        GridView gridView = (GridView) mRootView.findViewById(R.id.movies_grid_view);
+        final GridView gridView = (GridView) mRootView.findViewById(R.id.movies_grid_view);
         gridView.setAdapter(mAdapter);
 
-//        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//            @Override
-//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                // CursorAdapter returns a cursor at the correct position for getItem(), or null
+                // if it cannot seek to that position.
+                Cursor cursor = (Cursor) gridView.getItemAtPosition(position);
 //                ImageAdapter imageAdapter = (ImageAdapter) parent.getAdapter();
 //                Movie movie = imageAdapter.getItem(position);
-//
-//                if (movie == null){
-//                    return;
-//                }
-//                Intent intent = new Intent(getActivity(),DetailActivity.class);
+                if (cursor != null){
+                    Intent intent = new Intent(getActivity(), DetailActivity.class);
 //                intent.putExtra(Movie.EXTRA_MOVIE, movie.toBundle());
-//                startActivity(intent);
-//            }
-//        });
+                    Uri movieUri = MovieEntry.buildMovieUriWithMovieId(cursor.getString(ID_COL_MOVIE_ID));
+                    Log.d(LOG_TAG, "Movie clicked on. Uri: " + movieUri);
+                    intent.putExtra(Movie.EXTRA_MOVIE_URI, movieUri.toString());
+                    startActivity(intent);
+                }
+
+
+            }
+        });
 
         FetchMoviesTask fetchMoviesTask = new FetchMoviesTask(getActivity());
         fetchMoviesTask.execute();

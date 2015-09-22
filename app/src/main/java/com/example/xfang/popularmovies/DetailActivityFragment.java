@@ -2,6 +2,7 @@ package com.example.xfang.popularmovies;
 
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v4.app.Fragment;
@@ -16,6 +17,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.example.xfang.popularmovies.data.MovieContract.MovieEntry;
 import com.example.xfang.popularmovies.model.Movie;
 import com.example.xfang.popularmovies.model.Video;
 import com.squareup.picasso.Picasso;
@@ -50,6 +52,27 @@ public class DetailActivityFragment extends Fragment {
 
     String mMovieId;
 
+    private String[] MOVIE_DETAILACTIVITY_COLUMNS = {
+            MovieEntry._ID,
+            MovieEntry.COL_MOVIE_TITLE,
+            MovieEntry.COL_POSTER_PATH,
+            MovieEntry.COL_MOVIE_ID,
+            MovieEntry.COL_DATE,
+            MovieEntry.COL_PLOT,
+            MovieEntry.COL_RATING
+    };
+
+    // NOTE: These are tied to MOVIE_DETAILACTIVITY_COLUMNS. If MOVIE_DETAILACTIVITY_COLUMNS changes,
+    // these need to change too.
+    public static final int ID_COL_ID = 0;
+    public static final int ID_COL_MOVIE_TITLE = 1;
+    public static final int ID_COL_POSTER_PATH = 2;
+    public static final int ID_COL_MOVIE_ID = 3;
+    public static final int ID_COL_DATE = 4;
+    public static final int ID_COL_PLOT = 5;
+    public static final int ID_COL_RATING = 6;
+
+
     public DetailActivityFragment() {
     }
 
@@ -69,17 +92,23 @@ public class DetailActivityFragment extends Fragment {
         mVideosView = (ListView) rootView.findViewById(R.id.detail_videos);
 
         if (intent!= null){
-            Bundle bundle = intent.getBundleExtra(Movie.EXTRA_MOVIE);
-            Movie movie = new Movie(bundle);
+            //Bundle bundle = intent.getBundleExtra(Movie.EXTRA_MOVIE);
+            Uri movie_uri = Uri.parse(intent.getStringExtra(Movie.EXTRA_MOVIE_URI));
+            Cursor cursor = getActivity().getContentResolver().query(
+                    movie_uri,
+                    MOVIE_DETAILACTIVITY_COLUMNS, //projection
+                    null,
+                    null,
+                    null);
+            //Movie movie = new Movie(bundle);
+            cursor.moveToFirst();
+            mTitleView.setText(cursor.getString(ID_COL_MOVIE_TITLE));
+            mDateView.setText(cursor.getString(ID_COL_DATE));
+            mRatingView.setText(String.valueOf(cursor.getDouble(ID_COL_RATING)));
+            mPlotView.setText(cursor.getString(ID_COL_PLOT));
+            mMovieId = cursor.getString(ID_COL_MOVIE_ID);
 
-            mTitleView.setText(movie.title);
-            mDateView.setText(movie.date);
-            mRatingView.setText(Double.toString(movie.rating));
-            mPlotView.setText(movie.plot);
-
-            mMovieId = movie.movieId;
-
-            Uri posterUri = movie.getUri("w" + Movie.API_POSTER_SIZE);
+            Uri posterUri = Movie.getPosterUri(cursor, "w" + Movie.API_POSTER_SIZE);
             Picasso.with(getActivity())
                     .load(posterUri)
                     .into(mImageView);
@@ -107,8 +136,7 @@ public class DetailActivityFragment extends Fragment {
                 if (video == null){
                     return;
                 }
-
-
+                
                 try{
                     Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + video.video_key));
                     startActivity(intent);
