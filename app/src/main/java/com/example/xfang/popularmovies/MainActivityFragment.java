@@ -1,12 +1,6 @@
 package com.example.xfang.popularmovies;
 
-import android.content.ContentValues;
-import android.content.Intent;
 import android.database.Cursor;
-import android.database.DatabaseUtils;
-import android.net.Uri;
-import android.os.AsyncTask;
-import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,29 +9,26 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
+import android.support.v4.content.CursorLoader;
+
 
 import com.example.xfang.popularmovies.model.Movie;
 import com.example.xfang.popularmovies.data.MovieContract.MovieEntry;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Vector;
-
 /**
  * A placeholder fragment containing a simple view.
  */
-public class MainActivityFragment extends Fragment {
+public class MainActivityFragment extends Fragment
+        implements LoaderManager.LoaderCallbacks<Cursor>{
 
     final String LOG_TAG = MainActivityFragment.class.getSimpleName();
+
+    //private CursorLoader
+    private static final int MOVIES_LOADER_ID = 0;
+
     View mRootView;
     ImageAdapter mAdapter;
 
@@ -45,6 +36,32 @@ public class MainActivityFragment extends Fragment {
 
     }
 
+    public void onActivityCreated (Bundle savedInstanceState){
+        // Prepare the loader.  Either re-connect with an existing one,
+        // or start a new one.
+        getLoaderManager().initLoader(MOVIES_LOADER_ID, null, this);
+        super.onActivityCreated(savedInstanceState);
+    }
+
+    public Loader<Cursor> onCreateLoader(int id, Bundle args){
+        // TODO: change it to only query for user_pref (popular/top-rated)
+        return new CursorLoader(
+                getActivity(),
+                MovieEntry.CONTENT_URI,
+                null,
+                null,
+                null,
+                null
+                );
+    }
+
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data){
+        mAdapter.swapCursor(data);
+    }
+
+    public void onLoaderReset(Loader<Cursor> loader){
+        mAdapter.swapCursor(null);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -52,26 +69,7 @@ public class MainActivityFragment extends Fragment {
 
         mRootView = inflater.inflate(R.layout.fragment_main, container, false);
 
-        initGridView();
-
-        FetchMoviesTask fetchMoviesTask = new FetchMoviesTask(getActivity());
-        fetchMoviesTask.execute();
-
-        return mRootView;
-    }
-
-    public void initGridView(){
-
-        // TODO: change it to only query for user_pref (popular/top-rated)
-
-        // make a CursorAdapter
-        Cursor cursor = getActivity().getContentResolver().query(
-                MovieEntry.CONTENT_URI,
-                null,
-                null,
-                null,
-                null);
-        mAdapter = new ImageAdapter(getActivity(), cursor, 0);
+        mAdapter = new ImageAdapter(getActivity(),null, 0);
 
         GridView gridView = (GridView) mRootView.findViewById(R.id.movies_grid_view);
         gridView.setAdapter(mAdapter);
@@ -90,5 +88,10 @@ public class MainActivityFragment extends Fragment {
 //                startActivity(intent);
 //            }
 //        });
+
+        FetchMoviesTask fetchMoviesTask = new FetchMoviesTask(getActivity());
+        fetchMoviesTask.execute();
+
+        return mRootView;
     }
 }
