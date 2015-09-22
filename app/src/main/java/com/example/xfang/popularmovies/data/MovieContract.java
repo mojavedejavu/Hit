@@ -68,9 +68,14 @@ public class MovieContract {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
 
+        public static Uri buildVideoUriWithMovieId(String movie_id){
+            return CONTENT_URI.buildUpon().appendPath(movie_id).build();
+        }
+
         public static Uri buildVideoUriWithMovieIdAndKey(String movie_id, String video_key){
             return CONTENT_URI.buildUpon().appendPath(movie_id).appendPath(video_key).build();
         }
+
 
         public static String getMovieIdFromUri(Uri uri) {
             return uri.getPathSegments().get(1);

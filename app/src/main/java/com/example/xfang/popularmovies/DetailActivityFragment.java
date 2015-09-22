@@ -1,23 +1,31 @@
 package com.example.xfang.popularmovies;
 
 import android.content.ActivityNotFoundException;
+import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
+import android.widget.CursorAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import android.support.v4.content.CursorLoader;
+
 import com.example.xfang.popularmovies.data.MovieContract.MovieEntry;
+import com.example.xfang.popularmovies.data.MovieContract.VideoEntry;
+
 import com.example.xfang.popularmovies.model.Movie;
 import com.example.xfang.popularmovies.model.Video;
 import com.squareup.picasso.Picasso;
@@ -33,15 +41,21 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Vector;
 
 /**
  * A placeholder fragment containing a simple view.
  */
-public class DetailActivityFragment extends Fragment {
+public class DetailActivityFragment extends Fragment
+        implements LoaderManager.LoaderCallbacks<Cursor>{
 
-    ArrayAdapter<Video> mVideosAdapter;
+    private static final int VIDEOS_LOADER_ID = 0;
+
+    CursorAdapter mVideosAdapter;
 
     final String LOG_TAG = DetailActivityFragment.class.getSimpleName();
+
+    String mMovieId;
 
     TextView mTitleView;
     ImageView mImageView;
@@ -50,9 +64,7 @@ public class DetailActivityFragment extends Fragment {
     TextView mPlotView;
     ListView mVideosView;
 
-    String mMovieId;
-
-    private String[] MOVIE_DETAILACTIVITY_COLUMNS = {
+    private String[] MOVIE_DETAIL_ACTIVITY_MOVIE_COLUMNS = {
             MovieEntry._ID,
             MovieEntry.COL_MOVIE_TITLE,
             MovieEntry.COL_POSTER_PATH,
@@ -62,7 +74,7 @@ public class DetailActivityFragment extends Fragment {
             MovieEntry.COL_RATING
     };
 
-    // NOTE: These are tied to MOVIE_DETAILACTIVITY_COLUMNS. If MOVIE_DETAILACTIVITY_COLUMNS changes,
+    // NOTE: These are tied to MOVIE_DETAIL_ACTIVITY_MOVIE_COLUMNS. If MOVIE_DETAIL_ACTIVITY_MOVIE_COLUMNS changes,
     // these need to change too.
     public static final int ID_COL_ID = 0;
     public static final int ID_COL_MOVIE_TITLE = 1;
@@ -72,8 +84,35 @@ public class DetailActivityFragment extends Fragment {
     public static final int ID_COL_PLOT = 5;
     public static final int ID_COL_RATING = 6;
 
+    public Loader<Cursor> onCreateLoader(int id, Bundle args){
+        // TODO: change it to only query for user_pref (popular/top-rated)
+        return new CursorLoader(
+                getActivity(),
+                VideoEntry.buildVideoUriWithMovieId(mMovieId),
+                null, // projection
+                null,
+                null,
+                null
+        );
+    }
+
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data){
+        mVideosAdapter.swapCursor(data);
+    }
+
+    public void onLoaderReset(Loader<Cursor> loader){
+        mVideosAdapter.swapCursor(null);
+    }
+
 
     public DetailActivityFragment() {
+    }
+
+    public void onActivityCreated (Bundle savedInstanceState){
+        // Prepare the loader.  Either re-connect with an existing one,
+        // or start a new one.
+        getLoaderManager().initLoader(VIDEOS_LOADER_ID, null, this);
+        super.onActivityCreated(savedInstanceState);
     }
 
     @Override
@@ -82,8 +121,6 @@ public class DetailActivityFragment extends Fragment {
 
         View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
 
-        Intent intent = getActivity().getIntent();
-
         mTitleView = (TextView) rootView.findViewById(R.id.detail_title);
         mImageView = (ImageView) rootView.findViewById(R.id.detail_image);
         mDateView = (TextView) rootView.findViewById(R.id.detail_date);
@@ -91,12 +128,14 @@ public class DetailActivityFragment extends Fragment {
         mPlotView = (TextView) rootView.findViewById(R.id.detail_plot);
         mVideosView = (ListView) rootView.findViewById(R.id.detail_videos);
 
+
+        Intent intent = getActivity().getIntent();
         if (intent!= null){
             //Bundle bundle = intent.getBundleExtra(Movie.EXTRA_MOVIE);
             Uri movie_uri = Uri.parse(intent.getStringExtra(Movie.EXTRA_MOVIE_URI));
             Cursor cursor = getActivity().getContentResolver().query(
                     movie_uri,
-                    MOVIE_DETAILACTIVITY_COLUMNS, //projection
+                    MOVIE_DETAIL_ACTIVITY_MOVIE_COLUMNS, //projection
                     null,
                     null,
                     null);
@@ -106,6 +145,7 @@ public class DetailActivityFragment extends Fragment {
             mDateView.setText(cursor.getString(ID_COL_DATE));
             mRatingView.setText(String.valueOf(cursor.getDouble(ID_COL_RATING)));
             mPlotView.setText(cursor.getString(ID_COL_PLOT));
+
             mMovieId = cursor.getString(ID_COL_MOVIE_ID);
 
             Uri posterUri = Movie.getPosterUri(cursor, "w" + Movie.API_POSTER_SIZE);
@@ -117,152 +157,53 @@ public class DetailActivityFragment extends Fragment {
 
         // init and fetch videos
         initVideosView();
-        FetchVideosTask fetchVideosTask = new FetchVideosTask();
+        FetchVideosTask fetchVideosTask = new FetchVideosTask(getActivity(), mMovieId);
         fetchVideosTask.execute();
 
         return rootView;
     }
 
     public void initVideosView(){
-        mVideosAdapter = new ArrayAdapter<Video>(getActivity(), R.layout.video_item, R.id.textview_video_item);
+        //mVideosAdapter = new ArrayAdapter<Video>(getActivity(), R.layout.video_item, R.id.textview_video_item);
+        mVideosAdapter = new CursorAdapter(getActivity(), null, 0) {
+            @Override
+            public View newView(Context context, Cursor cursor, ViewGroup parent) {
+                View view = LayoutInflater.from(context).inflate(R.layout.video_item, parent, false);
+                return view;
+            }
+
+            @Override
+            public void bindView(View view, Context context, Cursor cursor) {
+                TextView tv = (TextView) view.findViewById(R.id.textview_video_item);
+                int ID_COL_VIDEO_TITLE = cursor.getColumnIndex(VideoEntry.COL_VIDEO_TITLE);
+                tv.setText(cursor.getString(ID_COL_VIDEO_TITLE));
+            }
+        };
+
         mVideosView.setAdapter(mVideosAdapter);
 
         mVideosView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-                Video video = mVideosAdapter.getItem(position);
+                //Video video = mVideosAdapter.getItem(position);
+                Cursor cursor = (Cursor) mVideosView.getItemAtPosition(position);
 
-                if (video == null){
-                    return;
-                }
-                
-                try{
-                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + video.video_key));
-                    startActivity(intent);
-                }
-                catch (ActivityNotFoundException ex){
-                    Intent intent=new Intent(Intent.ACTION_VIEW,
-                            Uri.parse("www.youtube.com/watch?v=" + video.video_key));
-                    startActivity(intent);
+                if (cursor != null) {
+                    int video_key_id = cursor.getColumnIndex(VideoEntry.COL_VIDEO_KEY);
+                    String video_key = cursor.getString(video_key_id);
+                    try {
+                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + video_key));
+                        startActivity(intent);
+                    } catch (ActivityNotFoundException ex) {
+                        Intent intent = new Intent(Intent.ACTION_VIEW,
+                                Uri.parse("www.youtube.com/watch?v=" + video_key));
+                        startActivity(intent);
+                    }
                 }
 
             }
         });
 
-    }
-
-    public class FetchVideosTask extends AsyncTask<Void, Void, ArrayList<Video>>{
-
-        String LOG_TAG = FetchVideosTask.class.getSimpleName();
-        @Override
-        protected void onPostExecute(ArrayList<Video> videos){
-            if (videos != null){
-                mVideosAdapter.clear();
-                mVideosAdapter.addAll(videos);
-            }
-        }
-
-        @Override
-        protected ArrayList<Video> doInBackground(Void... params){
-            ArrayList<Video> videos = new ArrayList<>();
-
-            HttpURLConnection urlConnection = null;
-            BufferedReader reader = null;
-
-            try{
-                final String BASE_URL = "https://api.themoviedb.org/3/movie/";
-                final String PATH_VIDEOS = "videos";
-                final String PARAM_API_KEY ="api_key";
-                final String VALUE_API_KEY ="af1cb7b82656a58d970263211175ce1f";
-
-                Uri uri = Uri.parse(BASE_URL).buildUpon()
-                        .appendPath(mMovieId)
-                        .appendPath(PATH_VIDEOS)
-                        .appendQueryParameter(PARAM_API_KEY, VALUE_API_KEY)
-                        .build();
-
-                URL url = new URL(uri.toString());
-
-                urlConnection = (HttpURLConnection) url.openConnection();
-                urlConnection.setRequestMethod("GET");
-                urlConnection.connect();
-
-                InputStream stream = urlConnection.getInputStream();
-                StringBuffer buffer = new StringBuffer();
-
-                if (stream == null){
-                    return null;
-                }
-
-                reader = new BufferedReader(new InputStreamReader(stream));
-                String line;
-                while( (line = reader.readLine()) != null){
-                    buffer.append(line + "\n");
-                }
-
-                if (buffer.length() == 0){
-                    return null;
-                }
-                String videosJsonString = buffer.toString();
-                videos = getVideosFromJsonString(videosJsonString);
-
-
-            }
-            catch(IOException e){
-                Log.e(LOG_TAG, "Error ", e);
-            }
-            catch(JSONException e){
-                Log.e(LOG_TAG, e.getMessage(), e);
-                e.printStackTrace();
-            }
-            finally{
-                if ( urlConnection != null){
-                    urlConnection.disconnect();
-                }
-                if( reader != null){
-                    try {
-                        reader.close();
-                    } catch (final IOException e) {
-                        Log.e(LOG_TAG, "Error closing stream", e);
-                    }
-                }
-            }
-
-            return videos;
-        }
-
-        public ArrayList<Video> getVideosFromJsonString(String jsonString) throws JSONException{
-            ArrayList<Video> videos = new ArrayList<>();
-
-            try{
-
-                final String API_ARRAY = "results";
-                final String API_VIDEO_NAME = "name";
-                final String API_VIDEO_KEY = "key";
-                final String API_VIDEO_SITE = "site";
-
-                JSONObject videosJson = new JSONObject(jsonString);
-                JSONArray videosJsonArray = videosJson.getJSONArray(API_ARRAY);
-
-                for (int i = 0; i < videosJsonArray.length(); i++){
-                    JSONObject videoObject = videosJsonArray.getJSONObject(i);
-                    String name = videoObject.getString(API_VIDEO_NAME);
-                    String key = videoObject.getString(API_VIDEO_KEY);
-                    String site = videoObject.getString(API_VIDEO_SITE);
-
-                    Video video = new Video(mMovieId, name, site, key);
-                    videos.add(video);
-                    Log.d(LOG_TAG, "Added new video: " + video.toStringWithVideoKey());
-                }
-
-            }
-            catch(JSONException e){
-                Log.e(LOG_TAG, e.getMessage(), e);
-                e.printStackTrace();
-            }
-
-            return videos;
-        }
     }
 }
