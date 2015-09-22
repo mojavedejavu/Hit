@@ -32,6 +32,23 @@ public class MainActivityFragment extends Fragment
     View mRootView;
     ImageAdapter mAdapter;
 
+    // projection array, part of our query on all the movies to be displayed
+    // Since we only need movie title and poster path on this screen, we only
+    // ask for these so that our app runs a little bit faster.
+    // NOTE: if this change, the column IDs need to change too
+    private static final String[] MOVIE_COLUMNS = {
+            MovieEntry._ID,
+            MovieEntry.COL_MOVIE_TITLE,
+            MovieEntry.COL_POSTER_PATH
+
+    };
+
+//    // NOTE: These are tied to MOVIE_COLUMNS. If MOVIE_COLUMNS changes,
+//    // these need to change too.
+//    static final int _ID_ID = 0;
+//    static final int COL_MOVIE_TITLE_ID = 1;
+//    static final int COL_POSTER_PATH = 2;
+
     public MainActivityFragment() {
 
     }
@@ -48,7 +65,7 @@ public class MainActivityFragment extends Fragment
         return new CursorLoader(
                 getActivity(),
                 MovieEntry.CONTENT_URI,
-                null,
+                MOVIE_COLUMNS, // projection
                 null,
                 null,
                 null
