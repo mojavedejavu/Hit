@@ -1,6 +1,7 @@
 package com.example.xfang.popularmovies.model;
 
 import android.content.ContentValues;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -56,6 +57,23 @@ public class Movie {
         this.movieId = cv.getAsString(MovieEntry.COL_MOVIE_ID);
     }
 
+
+    public Movie(Cursor cursor){
+        int titleId = cursor.getColumnIndex(MovieEntry.COL_MOVIE_TITLE);
+        int posterPathId = cursor.getColumnIndex(MovieEntry.COL_POSTER_PATH);
+        int plotId = cursor.getColumnIndex(MovieEntry.COL_PLOT);
+        int ratingId =cursor.getColumnIndex(MovieEntry.COL_RATING);
+        int dateId = cursor.getColumnIndex(MovieEntry.COL_DATE);
+        int movieIdId = cursor.getColumnIndex(MovieEntry.COL_MOVIE_ID);
+
+        this.title = cursor.getString(titleId);
+        this.posterPath = cursor.getString(posterPathId);
+        this.plot = cursor.getString(plotId);
+        this.rating = cursor.getDouble(ratingId);
+        this.date = cursor.getString(dateId);
+        this.movieId = cursor.getString(movieIdId);
+    }
+
     public String toString(){
         return movieId + " " + title + " " + posterPath + " " + plot + " " + rating + " " + date;
     }
@@ -64,6 +82,15 @@ public class Movie {
 
         String baseUrl = "http://image.tmdb.org/t/p/";
         Uri uri = Uri.parse(baseUrl).buildUpon().appendPath(size).appendEncodedPath(this.posterPath).build();
+
+        return uri;
+    }
+
+    static public Uri getPosterUri(Cursor cursor, String size){
+        String baseUrl = "http://image.tmdb.org/t/p/";
+        int posterPathId = cursor.getColumnIndex(MovieEntry.COL_POSTER_PATH);
+        String posterPath = cursor.getString(posterPathId);
+        Uri uri = Uri.parse(baseUrl).buildUpon().appendPath(size).appendEncodedPath(posterPath).build();
 
         return uri;
     }

@@ -29,25 +29,29 @@ import java.util.Vector;
 /**
  * Created by xfang on 9/18/15.
  */
-public class FetchMoviesTask extends AsyncTask<Void, Void, ArrayList<Movie>> {
+public class FetchMoviesTask extends AsyncTask<Void, Void, Void> {
 
     final String LOG_TAG = FetchMoviesTask.class.getSimpleName();
 
     private final Context mContext;
-    private final ImageAdapter mAdapter;
+    //private final ImageAdapter mAdapter;
 
-    public FetchMoviesTask(Context c, ImageAdapter a){
+    public FetchMoviesTask(Context c){
         mContext = c;
-        mAdapter = a;
     }
+
+//    public FetchMoviesTask(Context c, ImageAdapter a){
+//        mContext = c;
+//        mAdapter = a;
+//    }
 
     String convertContentValuesToString(ContentValues values) {
         return values.getAsString(MovieContract.MovieEntry.COL_MOVIE_ID) + " " +
                 values.getAsString(MovieContract.MovieEntry.COL_MOVIE_TITLE);
     }
 
-    ArrayList<Movie> getMoviesFromJson(String JSONString) throws JSONException {
-        ArrayList<Movie> movies = new ArrayList<>();
+    void getMoviesFromJson(String JSONString) throws JSONException {
+        //ArrayList<Movie> movies = new ArrayList<>();
 
         // Now we have a String representing the complete forecast in JSON Format.
         // Fortunately parsing is easy:  constructor takes the JSON string and converts it
@@ -104,54 +108,53 @@ public class FetchMoviesTask extends AsyncTask<Void, Void, ArrayList<Movie>> {
             }
 
             // add to database
+            int bulkInsertCount = 0;
             if ( cVVector.size() > 0 ) {
                 ContentValues[] cvArray = new ContentValues[cVVector.size()];
                 cVVector.toArray(cvArray);
-                int bulkInsertCount = mContext.getContentResolver().bulkInsert(
+                bulkInsertCount = mContext.getContentResolver().bulkInsert(
                         MovieContract.MovieEntry.CONTENT_URI, cvArray);
             }
 
-            Cursor cur = mContext.getContentResolver().query(MovieContract.MovieEntry.CONTENT_URI,
-                    null, null, null, null);
+//            Cursor cur = mContext.getContentResolver().query(MovieContract.MovieEntry.CONTENT_URI,
+//                    null, null, null, null);
+//
+//            if ( cur.moveToFirst() ) {
+//                do {
+//                    ContentValues cv = new ContentValues();
+//                    DatabaseUtils.cursorRowToContentValues(cur, cv);
+//                    Movie movieObject = new Movie(cv);
+//                    movies.add(movieObject);
+//                    Log.d(LOG_TAG, "Read new movie from the DATABASE: "+ movieObject.toString());
+//                } while (cur.moveToNext());
+//            }
 
-            if ( cur.moveToFirst() ) {
-                do {
-                    ContentValues cv = new ContentValues();
-                    DatabaseUtils.cursorRowToContentValues(cur, cv);
-                    Movie movieObject = new Movie(cv);
-                    movies.add(movieObject);
-                    Log.d(LOG_TAG, "Read new movie from the DATABASE: "+ movieObject.toString());
-                } while (cur.moveToNext());
-            }
-
-            Log.d(LOG_TAG, "FetchMoviesTask Complete. ");
+            Log.d(LOG_TAG, "FetchMoviesTask Complete. " + bulkInsertCount + " movies inserted");
 
         } catch (JSONException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
             e.printStackTrace();
         }
 
-
-        return movies;
     }
 
-    @Override
-    protected void onPostExecute(ArrayList<Movie> movies) {
-        if (movies != null) {
-            mAdapter.clear();
-            mAdapter.addAll(movies);
-            // New data is back from the server.  Hooray!
-        }
-    }
+//    @Override
+//    protected void onPostExecute(ArrayList<Movie> movies) {
+//        if (movies != null) {
+//            mAdapter.clear();
+//            mAdapter.addAll(movies);
+//            // New data is back from the server.  Hooray!
+//        }
+//    }
 
     @Override
-    protected ArrayList<Movie> doInBackground(Void... params){
+    protected Void doInBackground(Void... params){
         // These two need to be declared outside the try/catch
         // so that they can be closed in the finally block.
         HttpURLConnection urlConnection = null;
         BufferedReader reader = null;
 
-        ArrayList<Movie> movies = new ArrayList<>();
+        //ArrayList<Movie> movies = new ArrayList<>();
 
         try {
             final String BASE_URL =
@@ -202,13 +205,12 @@ public class FetchMoviesTask extends AsyncTask<Void, Void, ArrayList<Movie>> {
 
             if (buffer.length() == 0) {
                 // Stream was empty.  No point in parsing.
-                return null;
             }
 
             String moviesJsonStr = buffer.toString();
-
             Log.d(LOG_TAG, moviesJsonStr);
-            movies = getMoviesFromJson(moviesJsonStr);
+
+            getMoviesFromJson(moviesJsonStr);
 
         } catch (IOException e) {
             Log.e(LOG_TAG, "Error ", e);
@@ -230,7 +232,6 @@ public class FetchMoviesTask extends AsyncTask<Void, Void, ArrayList<Movie>> {
                 }
             }
         }
-        return movies;
+        return null;
     }
-
 }

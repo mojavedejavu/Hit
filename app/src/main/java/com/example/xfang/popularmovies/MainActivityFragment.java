@@ -54,30 +54,41 @@ public class MainActivityFragment extends Fragment {
 
         initGridView();
 
-        FetchMoviesTask fetchMoviesTask = new FetchMoviesTask(getActivity(), mAdapter);
+        FetchMoviesTask fetchMoviesTask = new FetchMoviesTask(getActivity());
         fetchMoviesTask.execute();
 
         return mRootView;
     }
 
     public void initGridView(){
-        mAdapter = new ImageAdapter(getActivity());
+
+        // TODO: change it to only query for user_pref (popular/top-rated)
+
+        // make a CursorAdapter
+        Cursor cursor = getActivity().getContentResolver().query(
+                MovieEntry.CONTENT_URI,
+                null,
+                null,
+                null,
+                null);
+        mAdapter = new ImageAdapter(getActivity(), cursor, 0);
+
         GridView gridView = (GridView) mRootView.findViewById(R.id.movies_grid_view);
         gridView.setAdapter(mAdapter);
 
-        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                ImageAdapter imageAdapter = (ImageAdapter) parent.getAdapter();
-                Movie movie = imageAdapter.getItem(position);
-
-                if (movie == null){
-                    return;
-                }
-                Intent intent = new Intent(getActivity(),DetailActivity.class);
-                intent.putExtra(Movie.EXTRA_MOVIE, movie.toBundle());
-                startActivity(intent);
-            }
-        });
+//        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//            @Override
+//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+//                ImageAdapter imageAdapter = (ImageAdapter) parent.getAdapter();
+//                Movie movie = imageAdapter.getItem(position);
+//
+//                if (movie == null){
+//                    return;
+//                }
+//                Intent intent = new Intent(getActivity(),DetailActivity.class);
+//                intent.putExtra(Movie.EXTRA_MOVIE, movie.toBundle());
+//                startActivity(intent);
+//            }
+//        });
     }
 }

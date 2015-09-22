@@ -96,6 +96,7 @@ public class MovieProvider extends ContentProvider {
                 int returnCount = 0;
                 try {
                     for (ContentValues value : values) {
+                        // query to see if the record already exists in database
                         Cursor queryCursor = getContext().getContentResolver().query(
                                 MovieEntry.CONTENT_URI,
                                 null, // return all columns
@@ -103,6 +104,7 @@ public class MovieProvider extends ContentProvider {
                                 new String[]{value.getAsString(MovieEntry.COL_MOVIE_ID)},
                                 null // sort order
                         );
+                        // only insert if the record doesn't already exist
                         if (!queryCursor.moveToFirst()) {
                             long _id = db.insert(MovieEntry.TABLE_NAME, null, value);
                             if (_id != -1) {
@@ -148,6 +150,7 @@ public class MovieProvider extends ContentProvider {
 
         switch (match){
             case ALL_MOVIES: {
+                // query to see if the record already exists in database
                 Cursor queryCursor = getContext().getContentResolver().query(
                         MovieEntry.CONTENT_URI,
                         null, // return all columns
@@ -155,6 +158,7 @@ public class MovieProvider extends ContentProvider {
                         new String[]{values.getAsString(MovieEntry.COL_MOVIE_ID)},
                         null // sort order
                 );
+                // only insert if the record doesn't already exist
                 if (!queryCursor.moveToFirst()) {
                     long _id = db.insert(MovieEntry.TABLE_NAME, null, values);
                     if (_id > 0) {
