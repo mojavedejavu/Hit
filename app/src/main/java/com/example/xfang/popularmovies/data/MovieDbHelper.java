@@ -6,6 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import com.example.xfang.popularmovies.data.MovieContract.MovieEntry;
 import com.example.xfang.popularmovies.data.MovieContract.VideoEntry;
+import com.example.xfang.popularmovies.model.Movie;
 
 /**
  * Created by xfang on 8/14/15.
@@ -15,7 +16,8 @@ public class MovieDbHelper extends SQLiteOpenHelper {
 
     // version 2 : added _ID column
     // version 3 : unified database column names and Movie model data members.
-    public static final int DB_VERSION = 3;
+    // version 4 : added SOURCE column
+    public static final int DB_VERSION = 4;
     public static final String DB_NAME = "data.db";
 
     public MovieDbHelper(Context context){
@@ -31,7 +33,8 @@ public class MovieDbHelper extends SQLiteOpenHelper {
                 MovieEntry.COL_POSTER_PATH + " TEXT NOT NULL," +
                 MovieEntry.COL_DATE + " TEXT NOT NULL," +
                 MovieEntry.COL_PLOT + " TEXT NOT NULL," +
-                MovieEntry.COL_RATING + " DECIMAL(1,1) NOT NULL" +
+                MovieEntry.COL_RATING + " DECIMAL(1,1) NOT NULL," +
+                MovieEntry.COL_SOURCE + " TEXT NOT NULL" +
                 ");";
 
         final String SQL_CREATE_VIDEO_TABLE = "CREATE TABLE " + VideoEntry.TABLE_NAME + " (" +

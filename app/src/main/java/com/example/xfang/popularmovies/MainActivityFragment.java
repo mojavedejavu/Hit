@@ -1,8 +1,10 @@
 package com.example.xfang.popularmovies;
 
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
@@ -27,7 +29,7 @@ public class MainActivityFragment extends Fragment
 
     final String LOG_TAG = MainActivityFragment.class.getSimpleName();
 
-    //private CursorLoader
+    // CursorLoader ID
     private static final int MOVIES_LOADER_ID = 0;
 
     View mRootView;
@@ -70,11 +72,22 @@ public class MainActivityFragment extends Fragment
                 getActivity(),
                 MovieEntry.CONTENT_URI,
                 MOVIE_MAINFRAGMENT_COLUMNS, // projection
-                null,
-                null,
+                MovieEntry.COL_SOURCE + " = ?", // selection
+                new String[]{getUserSortPref()}, // selection args
                 null
                 );
     }
+
+    public String getUserSortPref(){
+        Context c = getActivity().getApplicationContext();
+        return PreferenceManager
+                .getDefaultSharedPreferences(c)
+                .getString(
+                        c.getString(R.string.pref_sorting_key),
+                        c.getString(R.string.pref_sorting_default_value)
+                );
+    }
+
 
     public void onLoadFinished(Loader<Cursor> loader, Cursor data){
         mAdapter.swapCursor(data);

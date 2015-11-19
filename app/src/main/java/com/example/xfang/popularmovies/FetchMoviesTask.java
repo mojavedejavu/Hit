@@ -40,6 +40,15 @@ public class FetchMoviesTask extends AsyncTask<Void, Void, Void> {
         mContext = c;
     }
 
+    public String getUserSortPref(){
+        return PreferenceManager
+                .getDefaultSharedPreferences(mContext)
+                .getString(
+                        mContext.getString(R.string.pref_sorting_key),
+                        mContext.getString(R.string.pref_sorting_default_value)
+                );
+    }
+
 //    public FetchMoviesTask(Context c, ImageAdapter a){
 //        mContext = c;
 //        mAdapter = a;
@@ -75,6 +84,7 @@ public class FetchMoviesTask extends AsyncTask<Void, Void, Void> {
             // Insert the new movie information into the database
             Vector<ContentValues> cVVector = new Vector<ContentValues>(moviesArray.length());
 
+            String source = getUserSortPref();
 
             for (int i = 0; i < moviesArray.length(); i++) {
                 // These are the values that will be collected.
@@ -103,6 +113,8 @@ public class FetchMoviesTask extends AsyncTask<Void, Void, Void> {
                 movieValues.put(MovieContract.MovieEntry.COL_RATING, rating);
                 movieValues.put(MovieContract.MovieEntry.COL_DATE, date);
                 movieValues.put(MovieContract.MovieEntry.COL_MOVIE_ID, id);
+                // whether the movie is pulled from popular or top_rated movie
+                movieValues.put(MovieContract.MovieEntry.COL_SOURCE, source);
 
                 cVVector.add(movieValues);
             }
@@ -147,6 +159,8 @@ public class FetchMoviesTask extends AsyncTask<Void, Void, Void> {
 //        }
 //    }
 
+
+
     @Override
     protected Void doInBackground(Void... params){
         // These two need to be declared outside the try/catch
@@ -163,12 +177,7 @@ public class FetchMoviesTask extends AsyncTask<Void, Void, Void> {
             final String API_KEY = "api_key";
 
 
-            String userSortPref = PreferenceManager
-                    .getDefaultSharedPreferences(mContext)
-                    .getString(
-                            mContext.getString(R.string.pref_sorting_key),
-                            mContext.getString(R.string.pref_sorting_default_value)
-                    );
+            String userSortPref = getUserSortPref();
 
             Log.d(LOG_TAG, "userSortPref: " + userSortPref);
 

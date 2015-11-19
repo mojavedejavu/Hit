@@ -27,6 +27,7 @@ public class MovieContract {
         public static final String COL_POSTER_PATH = "poster_path";
         public static final String COL_RATING = "rating";
         public static final String COL_DATE = "date";
+        public static final String COL_SOURCE = "source";
 
         public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_MOVIE).build();
         public static final String CONTENT_TYPE =
